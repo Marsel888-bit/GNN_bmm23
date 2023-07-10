@@ -191,6 +191,8 @@ class FlowGNN(nn.Module):  # универсальная модель
 
         for i, (ef, nf) in enumerate(zip(self.edge_filters, self.node_filters)):
 
+            print(ef, ef.shape)
+            print(nf, nf.shape)
             fc_con = False
             if i in self.fc_con_list:
                 fc_con = True
