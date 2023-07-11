@@ -38,7 +38,7 @@ class FlowGNN_original(nn.Module):
 
     def loss(self, pred, inp):
         true_flow = inp.flow
-        print(true_flow.shape, pred.shape)
+        #print(true_flow.shape, pred.shape)
         error = torch.mean(torch.abs(true_flow - pred), 1)
         return torch.mean(error)
 
@@ -191,8 +191,6 @@ class FlowGNN(nn.Module):  # универсальная модель
 
         for i, (ef, nf) in enumerate(zip(self.edge_filters, self.node_filters)):
 
-            print(ef)
-            print(nf)
             fc_con = False
             if i in self.fc_con_list:
                 fc_con = True
