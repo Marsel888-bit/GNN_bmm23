@@ -9,6 +9,8 @@ from matplotlib import pyplot as plt
 from scipy.integrate import quad
 from scipy.interpolate import make_interp_spline
 import pandas as pd
+from scipy.interpolate import lagrange
+from numpy.polynomial.polynomial import Polynomial
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -102,11 +104,54 @@ def Fourier_series(x, res):
       values.append(sum)
     return np.array(values).flatten()
 
+
+def Lagrange_Polynom (coeff, x):
+  value = 0
+  for i in range(coeff.shape[0]):
+    value += coeff[i] * x**i
+  return value
+
+
+def Lagrange_interpolation (n, num_of_iters, out_dir):
+
+  os.makedirs(out_dir, exist_ok=True)
+  df = pd.DataFrame()
+  x, y = generate_points(n)
+  polynome = lagrange(x, y)
+  array = Polynomial(polynome.coef[::-1]).coef
+  df['x'] = x
+  list_of_coef = []
+
+  for i in range(1, num_of_iters):
+    x_iter, y_iter = generate_points(n)
+    pol = lagrange(x_iter, y_iter)
+    coef = Polynomial(pol.coef[::-1]).coef
+    list_of_coef.append(coef)
+    values = Lagrange_Polynom(coef, x_iter)
+    df[f'{i}'] = values
+
+    plt.scatter(x_iter, y_iter, label='data')
+    plt.plot(x_iter, Polynomial(pol.coef[::-1])(x_iter), label='Polynomial')
+    plt.plot(x_iter, values,
+         label=r"Lagrange polynom", linestyle='-.')
+    plt.legend()
+    plt.show()
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, f'cross_section{i}.png'))
+    display(plt.gcf())
+    clear_output(wait=True)
+  df.to_csv('data1.csv', header=False, index=False)
+  !cp data.csv "drive/My Drive/"
+  return df, list_of_coef
+
+
 series = Fourier_series(X_1, res1)
 x_values = X_1
 y_interp = x1_y1_spline(X_1)
 y_fourier = series
 
+
+df1, coeff = Lagrange_interpolation(15, 100, out_dir)
 
 plt.plot(x_values, y_interp, 'r', label='Интерполируемая функция')
 plt.plot(x_values, y_fourier, 'b--', label='Интерполяция рядами Фурье')
