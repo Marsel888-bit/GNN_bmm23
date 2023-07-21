@@ -31,33 +31,42 @@ def get_cross_section (n, num_of_iters, out_dir):
 
   os.makedirs(out_dir, exist_ok=True)
   df = pd.DataFrame()
+  df1 = pd.DataFrame()
   x, y = generate_points(n)
   x_y_spline = make_interp_spline(x, y)
   x = np.linspace(x.min(), x.max(), 100)
   df['x'] = x
+  df1['x'] = x
 
   for i in range(1, num_of_iters):
     x_iter, y_iter = generate_points(n)
     x_y_spline = make_interp_spline(x_iter, y_iter)
     X_ = np.linspace(x_iter.min(), x_iter.max(), 100)
     Y_ = x_y_spline(X_)
+    Y_copy = Y_.copy()
     for j in range(1, len(Y_)-1):
       noise = np.random.normal(0, 0.01, 1)
       Y_[j] = Y_[j] + noise
     Y_ = np.array([elem * (2 / np.max(Y_)) for elem in list(Y_)])
+    Y_copy = np.array([elem * (2 / np.max(Y_copy)) for elem in list(Y_copy)])
     df[f'{i}'] = Y_
+    df1[f'{i}'] = Y_copy
+    plt.plot(X_, Y_copy)
     plt.plot(X_, Y_)
     plt.title(f"Plot Smooth Curve of cross section number {i}")
     plt.xlabel("y")
     plt.ylabel("u")
+    plt.savefig(os.path.join(out_dir, f'cross_section{i}.png'))
     plt.show()
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f'cross_section{i}.png'))
     display(plt.gcf())
     clear_output(wait=True)
-  df.to_csv('data.csv', header=False, index=False)
+  
+  df.to_csv('data_with_noise.csv', header=False, index=False)
+  !cp data_with_noise.csv "drive/My Drive/"
+  df1.to_csv('data.csv', header=False, index=False)
   !cp data.csv "drive/My Drive/"
-  return df, np.array(Y_)
+  return df, np.array(Y_), df1, np.array(Y_copy)
 
 
 out_dir = 'out'
